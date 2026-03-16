@@ -1,20 +1,40 @@
 import { useState, useEffect, useCallback } from "react";
 
+export interface Market {
+  id: string;
+  kalshiTicker?: string;
+  [key: string]: unknown;
+}
+
+interface MarketsApiResponse {
+  markets: Market[];
+  activeId: string | null;
+}
+
+export interface UseMarketsReturn {
+  markets: Market[];
+  activeMarket: Market | null;
+  activeId: string | null;
+  selectMarket: (id: string) => Promise<void>;
+  pairKalshi: (marketId: string, kalshiTicker: string) => Promise<void>;
+  loading: boolean;
+}
+
 /**
  * useMarkets — fetches available mock markets and handles switching.
  *
  * On mount, fetches GET /api/markets to get the list and active market.
  * Exposes selectMarket() which POSTs to switch and updates local state.
  */
-export function useMarkets() {
-  const [markets, setMarkets] = useState([]);
-  const [activeId, setActiveId] = useState(null);
-  const [loading, setLoading] = useState(true);
+export function useMarkets(): UseMarketsReturn {
+  const [markets, setMarkets] = useState<Market[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     fetch("/api/markets")
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: MarketsApiResponse) => {
         setMarkets(data.markets || []);
         setActiveId(data.activeId);
         setLoading(false);
@@ -23,7 +43,7 @@ export function useMarkets() {
   }, []);
 
   const selectMarket = useCallback(
-    async (id) => {
+    async (id: string): Promise<void> => {
       if (id === activeId) return;
 
       try {
@@ -41,7 +61,7 @@ export function useMarkets() {
   );
 
   const pairKalshi = useCallback(
-    async (marketId, kalshiTicker) => {
+    async (marketId: string, kalshiTicker: string): Promise<void> => {
       try {
         const res = await fetch(`/api/markets/${marketId}/pair`, {
           method: "POST",

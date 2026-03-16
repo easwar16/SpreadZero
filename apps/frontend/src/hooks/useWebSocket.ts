@@ -5,6 +5,32 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_DELAY_MS = 2000;
 const HEARTBEAT_INTERVAL_MS = 25000;
 
+type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
+
+export interface BookData {
+  bids: BookLevel[];
+  asks: BookLevel[];
+  [key: string]: unknown;
+}
+
+export interface BookLevel {
+  price: number;
+  size: number;
+  sources: Record<string, number>;
+  [key: string]: unknown;
+}
+
+interface WsMessage {
+  type: "snapshot" | "update" | "pong" | string;
+  data?: BookData;
+}
+
+export interface UseWebSocketReturn {
+  book: BookData | null;
+  connectionState: ConnectionState;
+  lastUpdateTime: number | null;
+}
+
 /**
  * useWebSocket — manages the WebSocket lifecycle for the aggregated order book.
  *
@@ -12,17 +38,18 @@ const HEARTBEAT_INTERVAL_MS = 25000;
  * reconnects with a fixed 2s delay up to 5 attempts, and sends
  * periodic heartbeat pings to keep the connection alive.
  */
-export function useWebSocket() {
-  const [book, setBook] = useState(null);
-  const [connectionState, setConnectionState] = useState("connecting");
-  const [lastUpdateTime, setLastUpdateTime] = useState(null);
+export function useWebSocket(): UseWebSocketReturn {
+  const [book, setBook] = useState<BookData | null>(null);
+  const [connectionState, setConnectionState] =
+    useState<ConnectionState>("connecting");
+  const [lastUpdateTime, setLastUpdateTime] = useState<number | null>(null);
 
-  const wsRef = useRef(null);
-  const attemptRef = useRef(0);
-  const heartbeatRef = useRef(null);
-  const reconnectTimerRef = useRef(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const attemptRef = useRef<number>(0);
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Guard against connecting after unmount
-  const mountedRef = useRef(true);
+  const mountedRef = useRef<boolean>(true);
 
   const clearTimers = useCallback(() => {
     if (heartbeatRef.current) {
@@ -70,12 +97,12 @@ export function useWebSocket() {
       }, HEARTBEAT_INTERVAL_MS);
     };
 
-    ws.onmessage = (event) => {
+    ws.onmessage = (event: MessageEvent) => {
       if (!mountedRef.current) return;
       try {
-        const msg = JSON.parse(event.data);
+        const msg: WsMessage = JSON.parse(event.data as string);
         if (msg.type === "snapshot" || msg.type === "update") {
-          setBook(msg.data);
+          setBook(msg.data as BookData);
           setLastUpdateTime(Date.now());
         }
       } catch {

@@ -2,6 +2,33 @@ import { useMemo } from "react";
 
 const MAX_VISIBLE_LEVELS = 8;
 
+export interface BookLevel {
+  price: number;
+  size: number;
+  sources: Record<string, number>;
+  [key: string]: unknown;
+}
+
+export interface BookLevelWithCumulative extends BookLevel {
+  cumulative: number;
+}
+
+export interface Book {
+  bids: BookLevel[];
+  asks: BookLevel[];
+  [key: string]: unknown;
+}
+
+export type ActiveVenue = "combined" | "polymarket" | "kalshi" | string;
+
+export interface UseOrderBookReturn {
+  visibleBids: BookLevelWithCumulative[];
+  visibleAsks: BookLevelWithCumulative[];
+  spread: number;
+  midpoint: number;
+  maxSize: number;
+}
+
 /**
  * useOrderBook — filters and shapes the raw aggregated book for display.
  *
@@ -15,7 +42,10 @@ const MAX_VISIBLE_LEVELS = 8;
  *   - maxSize for depth bar scaling
  *   - top 8 visible levels for each side
  */
-export function useOrderBook(book, activeVenue) {
+export function useOrderBook(
+  book: Book | null,
+  activeVenue: ActiveVenue
+): UseOrderBookReturn {
   return useMemo(() => {
     if (!book) {
       return {
@@ -27,8 +57,8 @@ export function useOrderBook(book, activeVenue) {
       };
     }
 
-    let bids = book.bids || [];
-    let asks = book.asks || [];
+    let bids: BookLevel[] = book.bids || [];
+    let asks: BookLevel[] = book.asks || [];
 
     // Filter to single venue if not "combined"
     if (activeVenue !== "combined") {
@@ -67,7 +97,7 @@ export function useOrderBook(book, activeVenue) {
  * Rebuild levels using only a single venue's size.
  * Filters out levels where that venue has zero contribution.
  */
-function filterByVenue(levels, venue) {
+function filterByVenue(levels: BookLevel[], venue: string): BookLevel[] {
   return levels
     .map((level) => ({
       ...level,
@@ -84,7 +114,9 @@ function filterByVenue(levels, venue) {
  * Add cumulative dollar totals to each level.
  * Cumulative = sum of (price * size) from best price through this level.
  */
-function addCumulativeDollars(levels) {
+function addCumulativeDollars(
+  levels: BookLevel[]
+): BookLevelWithCumulative[] {
   let cumulative = 0;
   return levels.map((level) => {
     cumulative += level.price * level.size;
