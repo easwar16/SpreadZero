@@ -15,3 +15,10 @@ dist
 
 # OS
 .DS_Store
+
+# secrets / keys
+*.pem
+data/pairings.json
+
+# claude
+.claude/
