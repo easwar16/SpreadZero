@@ -4,6 +4,8 @@
 
 SpreadZero pulls live order book data from Polymarket and Kalshi, normalizes it into a common schema, merges the two books into a unified view, and streams the result to a browser UI over WebSocket. The combined book shows where liquidity sits across both venues with per-venue breakdowns at every price level. A quote calculator lets you enter a dollar amount and see how many shares you'd receive, split across venues, before placing any order.
 
+https://github.com/user-attachments/assets/8a7c0502-1f77-46f3-b399-cc9fdd54609f
+
 ---
 
 ## Features
