@@ -64,6 +64,7 @@ The backend uses three worker threads sharing a `SharedArrayBuffer` for zero-cop
 
 ```bash
 git clone <repo-url>
+cd SpreadZero
 pnpm install
 ```
 
