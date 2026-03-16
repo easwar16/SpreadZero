@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-page:    #0a0a0b;
+  --color-panel:   #16161a;
+  --color-raised:  #1c1c21;
+  --color-border:  #1f1f26;
+  --color-border-strong: #2a2a35;
+  --color-buy:     #00c87a;
+  --color-sell:    #f0364a;
+  --color-accent:  #7c6df0;
+  --color-text-primary:   #e8e8f0;
+  --color-text-secondary: #9090a8;
+  --color-text-muted:     #55556a;
+}
+
+body {
+  background-color: var(--color-page);
+  color: var(--color-text-primary);
+}
+
+/* Pulsing animation for "connecting" status dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+/* Subtle pulse for loading states */
+@keyframes subtle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.animate-subtle-pulse {
+  animation: subtle-pulse 1.5s ease-in-out infinite;
+}
+
+/* Glow effects */
+@keyframes buy-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(0,200,122,0.3); }
+  50% { box-shadow: 0 0 16px rgba(0,200,122,0.6); }
+}
+@keyframes sell-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(240,54,74,0.3); }
+  50% { box-shadow: 0 0 16px rgba(240,54,74,0.6); }
+}
